@@ -1,4 +1,56 @@
-﻿<!DOCTYPE html >
+﻿<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+include '../realadmin/security/dbconn.php'; // Подключение к БД
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Обработка даты
+    $publication_date = $_POST['publication_date'] ?? '';
+    if ($publication_date && strlen($publication_date) == 16) {
+        $publication_date .= ':00'; // добавляем секунды
+    }
+
+    $name = $_POST['productTitle1'] ?? '';
+    $description = $_POST['description'] ?? '';
+    $min_price = $_POST['initialCost'] ?? '';
+    $max_price = $_POST['sellingPrice'] ?? '';
+    $commission = $_POST['commission'] ?? '';
+    $developer = $_POST['developer'] ?? '';
+    $completion_date = $_POST['completion_date'] ?? '';
+    $curator = $_POST['curator'] ?? '';
+    $curator_phone = $_POST['curator_phone'] ?? '';
+    $address = $_POST['address'] ?? '';
+    $coordinates = $_POST['coordinates'] ?? '';
+    $location = $_POST['location'] ?? '';
+    $object_type = $_POST['object_type'] ?? '';
+    $ak = $_POST['ak'] ?? '';
+    $tags = $_POST['tags'] ?? '';
+    $publication_status = $_POST['publication_status'] ?? '';
+
+    $sql = "INSERT INTO objects 
+        (name, description, min_price, prices, commission, developer, completion_date, curator, curator_phone, address, coordinates, location, object_type, ak, tags, publication_status, publication_date) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    if ($stmt = $conn->prepare($sql)) {
+        $stmt->bind_param(
+            "sssssssssssssssss",
+            $name, $description, $min_price, $max_price, $commission, $developer, $completion_date,
+            $curator, $curator_phone, $address, $coordinates, $location, $object_type, $ak, $tags,
+            $publication_status, $publication_date
+        );
+        if ($stmt->execute()) {
+            echo "<div class='alert alert-success'>Объект успешно добавлен!</div>";
+        } else {
+            echo "<div class='alert alert-danger'>Ошибка выполнения запроса: " . $stmt->error . "</div>";
+        }
+        $stmt->close();
+    } else {
+        echo "<div class='alert alert-danger'>Ошибка подготовки запроса: " . $conn->error . "</div>";
+    }
+}
+?>
+<!DOCTYPE html >
 <html lang="en">
 
   <head>
@@ -71,539 +123,192 @@
     
    }
    ?>
-        <div class="page-body">
-          <div class="container-fluid">
-            <div class="page-title">
-              <div class="row">
-                <div class="col-sm-6 col-12"> 
-                  <h2>Добавить объект</h2>
-                </div>
-                <div class="col-sm-6 col-12">
-                  <ol class="breadcrumb">
-                  <li class="breadcrumb-item"><a href="/realadmin/"><i class="iconly-Home icli svg-color"></i></a></li>   
-                    <li class="breadcrumb-item active">Добавить объект</li>
-                  </ol>
-                </div>
-              </div>
+       
+
+<div class="page-body">
+  <div class="container-fluid">
+    <div class="page-title">
+      <div class="row">
+        <div class="col-sm-6 col-12"> 
+          <h2>Добавить объект</h2>
+        </div>
+        <div class="col-sm-6 col-12">
+          <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/realadmin/"><i class="iconly-Home icli svg-color"></i></a></li>   
+            <li class="breadcrumb-item active">Добавить объект</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+  <form method="POST" action="">
+    <div class="container-fluid">
+      <div class="row"> 
+        <div class="col-12"> 
+          <div class="card"> 
+            <div class="card-header card-no-border pb-0">
+              <h3>Заполнение полей</h3>
             </div>
-          </div>
-          <!-- Container-fluid starts-->
-          <div class="container-fluid">
-            <div class="row"> 
-              <div class="col-12"> 
-                <div class="card"> 
-                  <div class="card-header card-no-border pb-0">
-                    <h3>Заполнение полей</h3>
-                  </div>
-                  <div class="card-body">
-                    <div class="row g-xl-5 g-3">
-                      <div class="col-xxl-3 col-xl-4 box-col-4e sidebar-left-wrapper">
-                        <ul class="sidebar-left-icons nav nav-pills" id="add-product-pills-tab" role="tablist">
-                          <li class="nav-item"> <a class="nav-link active" id="detail-product-tab" data-bs-toggle="pill" href="#detail-product" role="tab" aria-controls="detail-product" aria-selected="false">
-                              <div class="nav-rounded">
-                                <div class="product-icons">
-                                  <svg class="stroke-icon">
-                                    <use href="../assets/svg/icon-sprite.svg#product-detail"></use>
-                                  </svg>
-                                </div>
-                              </div>
-                              <div class="product-tab-content">
-                                <h5>Основная информация</h5>
-                                <p>заголовок и описание объекта</p>
-                              </div></a></li>
-                          <li class="nav-item"> <a class="nav-link" id="gallery-product-tab" data-bs-toggle="pill" href="#gallery-product" role="tab" aria-controls="gallery-product" aria-selected="false">
-                              <div class="nav-rounded">
-                                <div class="product-icons">
-                                  <svg class="stroke-icon">
-                                    <use href="../assets/svg/icon-sprite.svg#product-gallery"></use>
-                                  </svg>
-                                </div>
-                              </div>
-                              <div class="product-tab-content">
-                                <h5>Галерея</h5>
-                                <p>Превью и фотографии объекта</p>
-                              </div></a></li>
-                          <li class="nav-item"> <a class="nav-link" id="category-product-tab" data-bs-toggle="pill" href="#category-product" role="tab" aria-controls="category-product" aria-selected="false">
-                              <div class="nav-rounded">
-                                <div class="product-icons">
-                                  <svg class="stroke-icon">
-                                    <use href="../assets/svg/icon-sprite.svg#product-category"></use>
-                                  </svg>
-                                </div>
-                              </div>
-                              <div class="product-tab-content">
-                                <h5>Тип объекта</h5>
-                                <p>Выбираем категории</p>
-                              </div></a></li>
-                          <li class="nav-item"><a class="nav-link" id="pricings-tab" data-bs-toggle="pill" href="#pricings" role="tab" aria-controls="pricings" aria-selected="false">
-                              <div class="nav-rounded">
-                                <div class="product-icons">
-                                  <svg class="stroke-icon">
-                                    <use href="../assets/svg/icon-sprite.svg#pricing"> </use>
-                                  </svg>
-                                </div>
-                              </div>
-                              <div class="product-tab-content">
-                                <h5>Ценовой блок</h5>
-                                <p>Заполняем информацию о стоимости</p>
-                              </div></a></li>
-                          <li class="nav-item"><a class="nav-link" id="advance-product-tab" data-bs-toggle="pill" href="#advance-product" role="tab" aria-controls="advance-product" aria-selected="false">
-                              <div class="nav-rounded">
-                                <div class="product-icons">
-                                  <svg class="stroke-icon">
-                                    <use href="../assets/svg/icon-sprite.svg#advance"> </use>
-                                  </svg>
-                                </div>
-                              </div>
-                              <div class="product-tab-content">
-                                <h5>Дополнительно</h5>
-                                <p>Прочие свойства объекта</p>
-                              </div></a></li>
-                        </ul>
+            <div class="card-body">
+              <div class="row g-xl-5 g-3">
+                <div class="col-xxl-3 col-xl-4 box-col-4e sidebar-left-wrapper">
+                  <ul class="sidebar-left-icons nav nav-pills" id="add-product-pills-tab" role="tablist">
+                    <li class="nav-item"> <a class="nav-link active" id="detail-product-tab" data-bs-toggle="pill" href="#detail-product" role="tab" aria-controls="detail-product" aria-selected="false">
+                        <div class="nav-rounded">
+                          <div class="product-icons">
+                            <svg class="stroke-icon">
+                              <use href="../assets/svg/icon-sprite.svg#product-detail"></use>
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="product-tab-content">
+                          <h5>Основная информация</h5>
+                          <p>заголовок и описание объекта</p>
+                        </div></a></li>
+                    <li class="nav-item"> <a class="nav-link" id="gallery-product-tab" data-bs-toggle="pill" href="#gallery-product" role="tab" aria-controls="gallery-product" aria-selected="false">
+                        <div class="nav-rounded">
+                          <div class="product-icons">
+                            <svg class="stroke-icon">
+                              <use href="../assets/svg/icon-sprite.svg#product-gallery"></use>
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="product-tab-content">
+                          <h5>Галерея</h5>
+                          <p>Превью и фотографии объекта</p>
+                        </div></a></li>
+                    <li class="nav-item"> <a class="nav-link" id="category-product-tab" data-bs-toggle="pill" href="#category-product" role="tab" aria-controls="category-product" aria-selected="false">
+                        <div class="nav-rounded">
+                          <div class="product-icons">
+                            <svg class="stroke-icon">
+                              <use href="../assets/svg/icon-sprite.svg#product-category"></use>
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="product-tab-content">
+                          <h5>Тип объекта</h5>
+                          <p>Выбираем категории</p>
+                        </div></a></li>
+                    <li class="nav-item"><a class="nav-link" id="pricings-tab" data-bs-toggle="pill" href="#pricings" role="tab" aria-controls="pricings" aria-selected="false">
+                        <div class="nav-rounded">
+                          <div class="product-icons">
+                            <svg class="stroke-icon">
+                              <use href="../assets/svg/icon-sprite.svg#pricing"> </use>
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="product-tab-content">
+                          <h5>Ценовой блок</h5>
+                          <p>Заполняем информацию о стоимости</p>
+                        </div></a></li>
+                    <li class="nav-item"><a class="nav-link" id="advance-product-tab" data-bs-toggle="pill" href="#advance-product" role="tab" aria-controls="advance-product" aria-selected="false">
+                        <div class="nav-rounded">
+                          <div class="product-icons">
+                            <svg class="stroke-icon">
+                              <use href="../assets/svg/icon-sprite.svg#advance"> </use>
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="product-tab-content">
+                          <h5>Дополнительно</h5>
+                          <p>Прочие свойства объекта</p>
+                        </div></a></li>
+                  </ul>
+                </div>
+                <div class="col-xxl-9 col-xl-8 box-col-8 position-relative">
+                  <div class="tab-content" id="add-product-pills-tabContent">
+                    <div class="tab-pane fade show active" id="detail-product" role="tabpanel" aria-labelledby="detail-product-tab">
+                      <div class="sidebar-body">
+                        <div class="row g-2">
+                          <label class="form-label col-12 m-0" for="productTitle1">Заголовок объекта <span class="text-danger"> *</span></label>
+                          <div class="col-12 custom-input">
+                            <input class="form-control" id="productTitle1" name="productTitle1" type="text" required>
+                          </div>
+                          <div class="col-12"> 
+                            <div class="toolbar-box">
+                              <div id="toolbar2"></div>
+                              <textarea class="form-control" id="description" name="description" placeholder="Описание объекта"></textarea>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div class="col-xxl-9 col-xl-8 box-col-8 position-relative">
-                        <div class="tab-content" id="add-product-pills-tabContent">
-                          <div class="tab-pane fade show active" id="detail-product" role="tabpanel" aria-labelledby="detail-product-tab">
-                            <div class="sidebar-body">
-                              <form class="row g-2">
-                                <label class="form-label col-12 m-0" for="productTitle1">Заголовок объекта <span class="text-danger"> *</span></label>
-                                <div class="col-12 custom-input">
-                                  <input class="form-control is-invalid" id="productTitle1" type="text" required="">
-                                  <div class="valid-feedback">Весьма неплохо!</div>
-                                  <div class="invalid-feedback">Заголовок должен состоять не менее чем из 3 символов и не повторяться</div>
-                                </div>
-                                <div class="col-12"> 
-                                  <div class="toolbar-box">
-                                    <div id="toolbar2"><span class="ql-formats">
-                                        <select class="ql-size"></select></span><span class="ql-formats">
-                                        <button class="ql-bold">Bold </button>
-                                        <button class="ql-italic">Italic </button>
-                                        <button class="ql-underline">underline</button>
-                                        <button class="ql-strike">Strike </button></span><span class="ql-formats">
-                                        <button class="ql-list" value="ordered">List </button>
-                                        <button class="ql-list" value="bullet"> </button>
-                                        <button class="ql-indent" value="-1"> </button>
-                                        <button class="ql-indent" value="+1"></button></span><span class="ql-formats">
-                                        <button class="ql-link"></button>
-                                        <button class="ql-image"></button>
-                                        <button class="ql-video"></button></span></div>
-                                    <div id="editor2"></div>
-                                  </div>
-                                  <p>Описание объекта</p>
-                                </div>
-                              </form>
-                              <div class="product-buttons">
-                                <div class="btn">
-                                  <div class="d-flex align-items-center gap-sm-2 gap-1">Далее
-                                    <svg>
-                                      <use href="../assets/svg/icon-sprite.svg#front-arrow">  </use>
-                                    </svg>
-                                  </div>
-                                </div>
-                              </div>
+                    </div>
+                    <div class="tab-pane fade" id="gallery-product" role="tabpanel" aria-labelledby="gallery-product-tab">
+                      <div class="sidebar-body">
+                        <div class="product-upload">
+                          <p>Product Image </p>
+                          <form class="dropzone dropzone-light" id="multiFileUploadA" action="/upload.php">
+                            <div class="dz-message needsclick">
+                              <svg>
+                                <use href="../assets/svg/icon-sprite.svg#file-upload"></use>
+                              </svg>
+                              <h6>Drag your image here, or <a class="text-primary" href="#!">browser</a></h6><span class="note needsclick">SVG,PNG,JPG or GIF</span>
                             </div>
-                          </div>
-                          <div class="tab-pane fade" id="gallery-product" role="tabpanel" aria-labelledby="gallery-product-tab">
-                            <div class="sidebar-body">
-                              <div class="product-upload">
-                                <p>Product Image </p>
-                                <form class="dropzone dropzone-light" id="multiFileUploadA" action="/upload.php">
-                                  <div class="dz-message needsclick">
-                                    <svg>
-                                      <use href="../assets/svg/icon-sprite.svg#file-upload"></use>
-                                    </svg>
-                                    <h6>Drag your image here, or <a class="text-primary" href="#!">browser</a></h6><span class="note needsclick">SVG,PNG,JPG or GIF</span>
-                                  </div>
-                                </form>
-                              </div>
-                              <!--
-                              <div class="product-upload">
-                                <p>Product Gallery</p>
-                                <form class="dropzone dropzone-light" id="multiFileUploadB" action="/upload.php">
-                                  <div class="dz-message needsclick">
-                                    <svg>
-                                      <use href="../assets/svg/icon-sprite.svg#file-upload1"></use>
-                                    </svg>
-                                    <h6>Drag files here</h6><span class="note needsclick">Add Product Gallery Images</span>
-                                  </div>
-                                </form>
-                              </div>-->
-                              <div class="product-buttons">
-                                <div class="btn">
-                                  <div class="d-flex align-items-center gap-sm-2 gap-1">
-                                    <svg>
-                                      <use href="../assets/svg/icon-sprite.svg#back-arrow"></use>
-                                    </svg>Назад
-                                  </div>
-                                </div>
-                                <div class="btn">
-                                  <div class="d-flex align-items-center gap-sm-2 gap-1">Далее
-                                    <svg>
-                                      <use href="../assets/svg/icon-sprite.svg#front-arrow">     </use>
-                                    </svg>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="tab-pane fade" id="category-product" role="tabpanel" aria-labelledby="category-product-tab">
-                            <div class="sidebar-body">
-                              <form>
-                                <div class="row g-lg-4 g-3">
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="tab-pane fade" id="category-product" role="tabpanel" aria-labelledby="category-product-tab">
+                      <div class="sidebar-body">
+                        <div class="row g-lg-4 g-3">
+                          <div class="col-12">
+                            <div class="row g-3">
+                              <div class="col-sm-6">
+                                <div class="row g-2"> 
                                   <div class="col-12">
-                                    <div class="row g-3">
-                                      <div class="col-sm-6">
-                                        <div class="row g-2"> 
-                                          <div class="col-12">
-                                            <label class="form-label m-0" for="validationDefault04">Вид объекта</label>
-                                          </div>
-                                          <div class="col-12">
-                                            <select class="form-select" id="validationDefault04" required="">
-                                              <option selected="" value="">АК</option>
-                                              <option>ЖК</option>
-                                              <option>КП</option>                                          
-                                            </select>
-                                            <p>Выберите подходящую категорию</p>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div class="col-sm-6">
-                                        <div class="row g-2 product-tag">
-                                          <div class="col-12">
-                                            <label class="form-label d-block m-0">Добавить тег</label>
-                                          </div>
-                                          <div class="col-12">
-                                            <input name="basic-tags" value="для жизни, под аренду, для отдыха">
-                                            <p>Можно выбрать несколько тегов</p>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div class="col-12">
-                                        <div class="category-buton"><a class="btn button-primary" href="#!" data-bs-toggle="modal" data-bs-target="#category-pill-modal"><i class="me-2 fa-solid fa-plus"></i>Добавить новую категорию </a></div>
-                                        <div class="modal fade" id="category-pill-modal" tabindex="-1" aria-hidden="true">
-                                          <div class="modal-dialog modal-lg">
-                                            <div class="modal-content">
-                                              <div class="modal-header">
-                                                <h3 class="modal-title fs-5">Добавить новую категорию</h3>
-                                                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
-                                              </div>
-                                              <div class="modal-body custom-input"> 
-                                                <div class="create-category">
-                                                  <div>
-                                                    <label class="form-label" for="categoryName">Название категории <span class="text-danger"> *</span></label>
-                                                    <input class="form-control m-0" id="categoryName" type="text" required="">
-                                                    <div class="toolbar-box">
-                                                      <div id="toolbar3"><span class="ql-formats">
-                                                          <select class="ql-size"></select></span><span class="ql-formats">
-                                                          <button class="ql-bold">Bold </button>
-                                                          <button class="ql-italic">Italic </button>
-                                                          <button class="ql-underline">underline</button>
-                                                          <button class="ql-strike">Strike </button></span><span class="ql-formats">
-                                                          <button class="ql-list" value="ordered">List </button>
-                                                          <button class="ql-list" value="bullet"> </button>
-                                                          <button class="ql-indent" value="-1"> </button>
-                                                          <button class="ql-indent" value="+1"></button></span><span class="ql-formats">
-                                                          <button class="ql-link"></button>
-                                                          <button class="ql-image"></button>
-                                                          <button class="ql-video"></button></span></div>
-                                                      <div id="editor3"></div>
-                                                    </div>
-                                                  </div>
-                                                  <p>Описание(подсказка) категории</p>
-                                                </div>
-                                              </div>
-                                              <div class="modal-footer">
-                                                <button class="btn btn-light font-dark" type="button" data-bs-dismiss="modal">Отмена</button>
-                                                <button class="btn btn-primary" type="button">Добавить</button>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
+                                    <label class="form-label m-0" for="validationDefault04">Вид объекта</label>
                                   </div>
-                                  <div class="col-12"> 
-                                    <div class="row g-3">
-                                      <div class="col-sm-6">
-                                        <div class="row">
-                                          <div class="col-12">
-                                            <label class="form-label" for="publishStatus">Статус публикации</label>
-                                            <select class="form-select" id="publishStatus" required="">
-                                              <option selected="" value="">Опубликован</option>
-                                              <option>Черновик</option>
-                                              <option>Снят с публикации</option>
-                                            </select>
-                                            <p>Выберите статус объекта</p>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div class="col-sm-6">
-                                        <div class="row">
-                                          <div class="col-12">
-                                            <label class="form-label" for="datetime-local1">Дата публикации</label>
-                                            <div class="input-group flatpicker-calender product-date">
-                                              <input class="form-control" id="datetime-local1" type="date">
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
+                                  <div class="col-12">
+                                    <select class="form-select" id="validationDefault04" name="object_type" required>
+                                      <option value="">Выберите</option>
+                                      <option value="АК">АК</option>
+                                      <option value="ЖК">ЖК</option>
+                                      <option value="КП">КП</option>                                          
+                                    </select>
+                                    <p>Выберите подходящую категорию</p>
                                   </div>
                                 </div>
-                                <div class="product-buttons">
-                                  <div class="btn">
-                                    <div class="d-flex align-items-center gap-sm-2 gap-1">
-                                      <svg>
-                                        <use href="../assets/svg/icon-sprite.svg#back-arrow"></use>
-                                      </svg>Назад
-                                    </div>
+                              </div>
+                              <div class="col-sm-6">
+                                <div class="row g-2 product-tag">
+                                  <div class="col-12">
+                                    <label class="form-label d-block m-0">Добавить тег</label>
                                   </div>
-                                  <div class="btn">
-                                    <div class="d-flex align-items-center gap-sm-2 gap-1">Далее
-                                      <svg>
-                                        <use href="../assets/svg/icon-sprite.svg#front-arrow"></use>
-                                      </svg>
-                                    </div>
+                                  <div class="col-12">
+                                    <input class="form-control" name="tags" value="">
+                                    <p>Можно выбрать несколько тегов</p>
                                   </div>
                                 </div>
-                              </form>
+                              </div>
+                              <div class="col-12">
+                                <div class="category-buton"><a class="btn button-primary" href="#!" data-bs-toggle="modal" data-bs-target="#category-pill-modal"><i class="me-2 fa-solid fa-plus"></i>Добавить новую категорию </a></div>
+                                <!-- Модальное окно — не влияет на отправку формы -->
+                              </div>
                             </div>
                           </div>
-                          <div class="tab-pane fade" id="pricings" role="tabpanel" aria-labelledby="pricings-tab">
-                            <div class="sidebar-body">
-                              <form class="price-wrapper">
-                                <div class="row g-3 custom-input">
-                                  <div class="col-sm-6"> 
-                                    <label class="form-label" for="initialCost">Минимальная цена <span class="text-danger">*</span></label>
-                                    <input class="form-control" id="initialCost" type="number">
+                          <div class="col-12"> 
+                            <div class="row g-3">
+                              <div class="col-sm-6">
+                                <div class="row">
+                                  <div class="col-12">
+                                    <label class="form-label" for="publishStatus">Статус публикации</label>
+                                    <select class="form-select" id="publishStatus" name="publication_status" required>
+                                      <option value="">Выберите</option>
+                                      <option value="Опубликован">Опубликован</option>
+                                      <option value="Черновик">Черновик</option>
+                                      <option value="Снят с публикации">Снят с публикации</option>
+                                    </select>
+                                    <p>Выберите статус объекта</p>
                                   </div>
-                                  <div class="col-sm-6"> 
-                                    <label class="form-label" for="sellingPrice">Максимальная цена <span class="text-danger">*</span></label>
-                                    <input class="form-control" id="sellingPrice" type="number">
-                                  </div>
-                                  
-                                  
-                                 
                                 </div>
-                                <div class="product-buttons">
-                                  <div class="btn">
-                                    <div class="d-flex align-items-center gap-sm-2 gap-1">
-                                      <svg>
-                                        <use href="../assets/svg/icon-sprite.svg#back-arrow"></use>
-                                      </svg>Назад
+                              </div>
+                              <div class="col-sm-6">
+                                <div class="row">
+                                  <div class="col-12">
+                                    <label class="form-label" for="datetime-local1">Дата публикации</label>
+                                    <div class="input-group flatpicker-calender product-date">
+                                      <input class="form-control" id="datetime-local1" name="publication_date" type="date">
                                     </div>
-                                  </div>
-                                  <div class="btn">
-                                    <div class="d-flex align-items-center gap-sm-2 gap-1">Далее
-                                      <svg>
-                                        <use href="../assets/svg/icon-sprite.svg#front-arrow">   </use>
-                                      </svg>
-                                    </div>
-                                  </div>
-                                </div>
-                              </form>
-                            </div>
-                          </div>
-                          <div class="tab-pane fade" id="advance-product" role="tabpanel" aria-labelledby="advance-product-tab">
-                            <div class="sidebar-body advance-options">
-                              <ul class="nav nav-tabs border-tab mb-0" id="advance-option-tab" role="tablist">
-                                <li class="nav-item"><a class="nav-link active" id="manifest-option-tab" data-bs-toggle="tab" href="#manifest-option" role="tab" aria-controls="manifest-option" aria-selected="true">Информация</a></li>
-                                <li class="nav-item"><a class="nav-link" id="additional-option-tab" data-bs-toggle="tab" href="#additional-option" role="tab" aria-controls="additional-option" aria-selected="false">Файлы</a></li>
-                                <li class="nav-item"><a class="nav-link" id="dropping-option-tab" data-bs-toggle="tab" href="#dropping-option" role="tab" aria-controls="dropping-option" aria-selected="false">Локация</a></li>
-                              </ul>
-                              <div class="tab-content" id="advance-option-tabContent">
-                                <div class="tab-pane fade show active" id="manifest-option" role="tabpanel" aria-labelledby="manifest-option-tab">
-                                  <div class="meta-body"> 
-                                    <form id="advance-tab">
-                                      <div class="row g-3"> 
-                                        <div class="col-12"> 
-                                          <div class="row g-3">
-                                             <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Застройщик</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                                 
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Дата сдачи</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                               
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Куратор</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                              
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Телефон куратора</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                                 
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div class="product-buttons">
-                                        <div class="btn">
-                                          <div class="d-flex align-items-center gap-sm-2 gap-1">
-                                            <svg>
-                                              <use href="../assets/svg/icon-sprite.svg#back-arrow"></use>
-                                            </svg>Назад
-                                          </div>
-                                        </div>
-                                        <div class="btn">
-                                          <div class="d-flex align-items-center gap-sm-2 gap-1">Далее
-                                            <svg>
-                                              <use href="../assets/svg/icon-sprite.svg#front-arrow"></use>
-                                            </svg>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </form>
-                                  </div>
-                                </div>
-                                <div class="tab-pane fade" id="additional-option" role="tabpanel" aria-labelledby="additional-option-tab">
-                                  <div class="meta-body">
-                                    <form>
-                                      <div class="row g-3"> 
-                                        <div class="col-12"> 
-                                          <div class="row g-3">
-                                            <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Файлы</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                               
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Скачать pdf</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                              
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Видео по объекту</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                              
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div class="product-buttons">
-                                        <div class="btn">
-                                          <div class="d-flex align-items-center gap-sm-2 gap-1">
-                                            <svg>
-                                              <use href="../assets/svg/icon-sprite.svg#back-arrow"></use>
-                                            </svg>Назад
-                                          </div>
-                                        </div>
-                                        <div class="btn">
-                                          <div class="d-flex align-items-center gap-sm-2 gap-1">Далее
-                                            <svg>
-                                              <use href="../assets/svg/icon-sprite.svg#front-arrow"></use>
-                                            </svg>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </form>
-                                  </div>
-                                </div>
-                                <div class="tab-pane fade" id="dropping-option" role="tabpanel" aria-labelledby="dropping-option-tab">
-                                  <div class="meta-body">
-                                    <form>
-                                     <div class="row g-3"> 
-                                        <div class="col-12"> 
-                                          <div class="row g-3">
-                                            <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Адрес</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                             
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Координаты на карте</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                   
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                              <div class="row custom-input">
-                                                <div class="col-12">
-                                                  <label class="form-label" for="tagTitle">Локация</label>
-                                                </div>
-                                                <div class="col-12">
-                                                  <input class="form-control" id="tagTitle" type="text">
-                                                
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div class="product-buttons">
-                                        <div class="btn">
-                                          <div class="d-flex align-items-center gap-sm-2 gap-1">
-                                            <svg>
-                                              <use href="../assets/svg/icon-sprite.svg#back-arrow"></use>
-                                            </svg>Назад
-                                          </div>
-                                        </div>
-                                        <div class="btn">
-                                          <div class="d-flex align-items-center gap-sm-2 gap-1">Сохранить
-                                            <svg>
-                                              <use href="../assets/svg/icon-sprite.svg#front-arrow"></use>
-                                            </svg>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </form>
                                   </div>
                                 </div>
                               </div>
@@ -612,12 +317,195 @@
                         </div>
                       </div>
                     </div>
+                    <div class="tab-pane fade" id="pricings" role="tabpanel" aria-labelledby="pricings-tab">
+                      <div class="sidebar-body">
+                        <div class="price-wrapper">
+                          <div class="row g-3 custom-input">
+                            <div class="col-sm-6"> 
+                              <label class="form-label" for="initialCost">Минимальная цена <span class="text-danger">*</span></label>
+                              <input class="form-control" id="initialCost" name="initialCost" type="number">
+                            </div>
+                            <div class="col-sm-6"> 
+                              <label class="form-label" for="sellingPrice">Максимальная цена <span class="text-danger">*</span></label>
+                              <input class="form-control" id="sellingPrice" name="sellingPrice" type="number">
+                            </div>
+                            <div class="col-sm-6"> 
+                              <label class="form-label" for="commission">Комиссия агента <span class="text-danger">*</span></label>
+                              <input class="form-control" id="commission" name="commission" type="number">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="tab-pane fade" id="advance-product" role="tabpanel" aria-labelledby="advance-product-tab">
+                      <div class="sidebar-body advance-options">
+                        <ul class="nav nav-tabs border-tab mb-0" id="advance-option-tab" role="tablist">
+                          <li class="nav-item"><a class="nav-link active" id="manifest-option-tab" data-bs-toggle="tab" href="#manifest-option" role="tab" aria-controls="manifest-option" aria-selected="true">Информация</a></li>
+                          <li class="nav-item"><a class="nav-link" id="additional-option-tab" data-bs-toggle="tab" href="#additional-option" role="tab" aria-controls="additional-option" aria-selected="false">Файлы</a></li>
+                          <li class="nav-item"><a class="nav-link" id="dropping-option-tab" data-bs-toggle="tab" href="#dropping-option" role="tab" aria-controls="dropping-option" aria-selected="false">Локация</a></li>
+                        </ul>
+                        <div class="tab-content" id="advance-option-tabContent">
+                          <div class="tab-pane fade show active" id="manifest-option" role="tabpanel" aria-labelledby="manifest-option-tab">
+                            <div class="meta-body"> 
+                              <div class="row g-3"> 
+                                <div class="col-12"> 
+                                  <div class="row g-3">
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="developer">Застройщик</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="developer" name="developer" type="text">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="completion_date">Дата сдачи</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="completion_date" name="completion_date" type="text">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="curator">Куратор</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="curator" name="curator" type="text">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="curator_phone">Телефон куратора</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="curator_phone" name="curator_phone" type="text">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="ak">АК</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="ak" name="ak" type="text">
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="tab-pane fade" id="additional-option" role="tabpanel" aria-labelledby="additional-option-tab">
+                            <div class="meta-body">
+                              <div class="row g-3"> 
+                                <div class="col-12"> 
+                                  <div class="row g-3">
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="files">Файлы</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="files" type="text" disabled>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="pdf">Скачать pdf</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="pdf" type="text" disabled>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="video">Видео по объекту</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="video" type="text" disabled>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="tab-pane fade" id="dropping-option" role="tabpanel" aria-labelledby="dropping-option-tab">
+                            <div class="meta-body">
+                              <div class="row g-3"> 
+                                <div class="col-12"> 
+                                  <div class="row g-3">
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="address">Адрес</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="address" name="address" type="text">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="coordinates">Координаты на карте</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="coordinates" name="coordinates" type="text">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                      <div class="row custom-input">
+                                        <div class="col-12">
+                                          <label class="form-label" for="location">Локация</label>
+                                        </div>
+                                        <div class="col-12">
+                                          <input class="form-control" id="location" name="location" type="text">
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div> <!-- tab-content -->
+                      </div>
+                    </div> <!-- /advance-product -->
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      <!-- Save button fixed below main container, always visible -->
+      <div class="container-fluid mt-3">
+        <div class="row">
+          <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary btn-lg px-5">Сохранить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
         <?php
    $url = 'https://realty.pixeldev.ru/realadmin/include/footer.php';
    $content = file_get_contents($url);
@@ -664,10 +552,10 @@
     <script src="../assets/js/vendors/@yaireo/tagify/dist/intlTelInput.min.js"></script>
     <!-- page_select4-->
     <script src="../assets/js/add-product/select4-custom.js"> </script>
-    <!-- editors-->
+    <!-- editors
     <script src="../assets/js/editors/quill.js"></script>
-    <!-- editors2-->
-    <script src="../assets/js/custom-add-product.js"></script>
+    editors2
+    <script src="../assets/js/custom-add-product.js"></script> -->
     <!-- custom script -->
     <script src="../assets/js/script.js"></script>
   </body>
