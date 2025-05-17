@@ -74,23 +74,25 @@ $result = $conn->query($query);
 ?>
 <?php
 
+
 // Получаем уникальные значения для фильтров
-// Фильтр по типу объекта
+
+// Фильтр по типу объекта (как было)
 $types = [];
 $res_types = $conn->query("SELECT DISTINCT object_type FROM objects WHERE object_type IS NOT NULL AND object_type != ''");
 while ($row = $res_types->fetch_assoc()) $types[] = $row['object_type'];
 
-// Фильтр по статусу
+// Фильтр по publication_status — выводим только уникальные доступные значения
 $statuses = [];
 $res_statuses = $conn->query("SELECT DISTINCT publication_status FROM objects WHERE publication_status IS NOT NULL AND publication_status != ''");
 while ($row = $res_statuses->fetch_assoc()) $statuses[] = $row['publication_status'];
 
-// Фильтр по виду объекта (ak)
+// Фильтр по виду объекта (ak) — теперь строим динамически по факту наличия в базе
 $aks = [];
 $res_aks = $conn->query("SELECT DISTINCT ak FROM objects WHERE ak IS NOT NULL AND ak != ''");
 while ($row = $res_aks->fetch_assoc()) $aks[] = $row['ak'];
 
-// Фильтр по цене (группируем по min_price)
+// Фильтр по цене (оставляем как есть)
 $prices = [];
 $res_prices = $conn->query("SELECT DISTINCT min_price FROM objects WHERE min_price IS NOT NULL AND min_price != '' ORDER BY min_price ASC");
 while ($row = $res_prices->fetch_assoc()) $prices[] = $row['min_price'];
@@ -128,13 +130,6 @@ $result = $conn->query($sql);
     </div>
   </div>
   <div class="container-fluid">
-    <div class="row">
-      <div class="col-12"> 
-        <div class="card"> 
-          <div class="card-header card-no-border pb-0">
-            <h3>Объекты</h3>
-          </div>
-          <div class="container-fluid">
     <div class="list-product-header mb-3">
       <div>
         <div class="light-box">
@@ -157,7 +152,7 @@ $result = $conn->query($sql);
                   <option value="desc" <?= (isset($_GET['sort_price']) && $_GET['sort_price']=='desc')?'selected':'';?>>Сначала дорогие</option>
                 </select>
               </div>
-              <!-- Фильтр по статусу -->
+              <!-- Фильтр по publication_status (динамический) -->
               <div class="col"> 
                 <select class="form-select" name="publication_status" onchange="this.form.submit()">
                   <option value="">Статус</option>
@@ -179,7 +174,7 @@ $result = $conn->query($sql);
                   <?php endforeach; ?>
                 </select>
               </div>
-              <!-- Фильтр по виду объекта (ak) -->
+              <!-- Фильтр по виду объекта (ak, динамически) -->
               <div class="col"> 
                 <select class="form-select" name="ak" onchange="this.form.submit()">
                   <option value="">Вид объекта</option>
@@ -206,6 +201,7 @@ $result = $conn->query($sql);
         </div>
       </div>
     </div>
+</div>
           <div class="card-body">
             <div class="table-responsive">
               <table class="table table-striped align-middle">
