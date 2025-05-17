@@ -66,1129 +66,197 @@
     
    }
    ?>
-        <div class="page-body">
-          <div class="container-fluid">
-            <div class="page-title">
-              <div class="row">
-                <div class="col-sm-6 col-12"> 
-                  <h2>Список объектов</h2>
-                </div>
-                <div class="col-sm-6 col-12">
-                  <ol class="breadcrumb">
-                  <li class="breadcrumb-item"><a href="/realadmin/"><i class="iconly-Home icli svg-color"></i></a></li>   
-                    <li class="breadcrumb-item active">Список объектов</li>
-                  </ol>
-                </div>
-              </div>
-            </div>
+      <?php
+include '../realadmin/security/dbconn.php';
+
+$query = "SELECT * FROM objects ORDER BY id DESC";
+$result = $conn->query($query);
+?>
+<?php
+
+// Получаем уникальные значения для фильтров
+// Фильтр по типу объекта
+$types = [];
+$res_types = $conn->query("SELECT DISTINCT object_type FROM objects WHERE object_type IS NOT NULL AND object_type != ''");
+while ($row = $res_types->fetch_assoc()) $types[] = $row['object_type'];
+
+// Фильтр по статусу
+$statuses = [];
+$res_statuses = $conn->query("SELECT DISTINCT publication_status FROM objects WHERE publication_status IS NOT NULL AND publication_status != ''");
+while ($row = $res_statuses->fetch_assoc()) $statuses[] = $row['publication_status'];
+
+// Фильтр по виду объекта (ak)
+$aks = [];
+$res_aks = $conn->query("SELECT DISTINCT ak FROM objects WHERE ak IS NOT NULL AND ak != ''");
+while ($row = $res_aks->fetch_assoc()) $aks[] = $row['ak'];
+
+// Фильтр по цене (группируем по min_price)
+$prices = [];
+$res_prices = $conn->query("SELECT DISTINCT min_price FROM objects WHERE min_price IS NOT NULL AND min_price != '' ORDER BY min_price ASC");
+while ($row = $res_prices->fetch_assoc()) $prices[] = $row['min_price'];
+
+// Обработка GET-параметров фильтра
+$where = [];
+$order = "id DESC";
+
+if (!empty($_GET['object_type'])) $where[] = "object_type = '" . $conn->real_escape_string($_GET['object_type']) . "'";
+if (!empty($_GET['publication_status'])) $where[] = "publication_status = '" . $conn->real_escape_string($_GET['publication_status']) . "'";
+if (!empty($_GET['ak'])) $where[] = "ak = '" . $conn->real_escape_string($_GET['ak']) . "'";
+if (!empty($_GET['min_price'])) $where[] = "min_price = '" . $conn->real_escape_string($_GET['min_price']) . "'";
+
+// Сортировка по цене
+if (!empty($_GET['sort_price']) && ($_GET['sort_price'] === 'asc' || $_GET['sort_price'] === 'desc')) {
+    $order = "min_price " . strtoupper($_GET['sort_price']);
+}
+
+$sql = "SELECT * FROM objects";
+if ($where) $sql .= " WHERE " . implode(' AND ', $where);
+$sql .= " ORDER BY $order";
+$result = $conn->query($sql);
+?>
+<div class="page-body">
+  <div class="container-fluid">
+    <div class="page-title">
+      <div class="row">
+        <div class="col-sm-6 col-12"> 
+          <h2>Список объектов</h2>
+        </div>
+        <div class="col-sm-6 col-12 text-end">
+          <a href="add-object.php" class="btn btn-primary">Добавить объект</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12"> 
+        <div class="card"> 
+          <div class="card-header card-no-border pb-0">
+            <h3>Объекты</h3>
           </div>
-          <!-- Container-fluid starts-->
           <div class="container-fluid">
-            <div class="row"> 
-              <div class="col-sm-12"> 
-                <div class="card"> 
-                  <div class="card-body">
-                    <div class="list-product-header">
-                      <div> 
-                        <div class="light-box"><a data-bs-toggle="collapse" href="#collapseProduct" role="button" aria-expanded="false" aria-controls="collapseProduct"><i class="filter-icon show" data-feather="filter"></i><i class="icon-close filter-close hide"></i></a></div><a class="btn btn-primary" href="/realadmin/add-object.php"><i class="fa-solid fa-plus"></i>Добавить объект</a>
-                      </div>
-                      <div class="collapse" id="collapseProduct">
-                        <div class="card card-body list-product-body">
-                          <div class="row row-cols-xl-5 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2 g-3"> 
-                            <div class="col"> 
-                              <select class="form-select" aria-label="Default select example">
-                                <option selected="">Выбрать объект</option>
-                                <option value="1">Apple iphone 13 Pro</option>
-                                <option value="2">Wood Chair</option>
-                                <option value="3">M185 Compact Wireless Mouse</option>
-                              </select>
-                            </div>
-                            <div class="col"> 
-                              <select class="form-select" aria-label="Default select example">
-                                <option selected="">Регион</option>
-                                <option value="1">Furniture</option>
-                                <option value="2">Smart Gadgets</option>
-                                <option value="3">Electrics</option>
-                              </select>
-                            </div>
-                            <div class="col"> 
-                              <select class="form-select" aria-label="Default select example">
-                                <option selected="">Тип объекта</option>
-                                <option value="1">Smart Phones</option>
-                                <option value="2">Smart Watches</option>
-                                <option value="3">Wireless headphone</option>
-                              </select>
-                            </div>
-                            <div class="col"> 
-                              <select class="form-select" aria-label="Default select example">
-                                <option selected="">Статус</option>
-                                <option value="1">Sold Out </option>
-                                <option value="2">In Stock</option>
-                                <option value="3">Pre Order</option>
-                                <option value="4">Limited Stock </option>
-                              </select>
-                            </div>
-                            <div class="col"> 
-                              <select class="form-select" aria-label="Default select example">
-                                <option selected="">Цена</option>
-                                <option value="1">56000.00</option>
-                                <option value="2">19000.00</option>
-                                <option value="3">10000.00</option>
-                                <option value="3">15000.00</option>
-                                <option value="3">99000.00</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="list-product">
-                      <table class="table" id="project-status">
-                        <thead> 
-                          <tr> 
-                            <th>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </th>
-                            <th> <span class="f-light f-w-600">Название</span></th>
-                            <th> <span class="f-light f-w-600">Артикул</span></th>
-                            <th> <span class="f-light f-w-600">Регион</span></th>
-                            <th> <span class="f-light f-w-600">Цена</span></th>
-                            <th> <span class="f-light f-w-600">Порядок</span></th>
-                            <th> <span class="f-light f-w-600">Статус</span></th>
-                            <th> <span class="f-light f-w-600">Рейтинг</span></th>
-                            <th> <span class="f-light f-w-600">Действие</span></th>
-                          </tr>
-                        </thead>
-                        <tbody> 
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/laptop.png" alt="laptop"></div>
-                                <p>Apple Desktop 2024</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">02145YK796</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Laptops</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">56000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">13</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/phone.png" alt="phone"></div>
-                                <p>Apple iphone 13 Pro</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">56379FG3AW</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Phones    </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">19000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">48</p>
-                            </td>
-                            <td> <span class="badge badge-light-primary">In Stock</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/headphone.png" alt="headphones"></div>
-                                <p>Headphones</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">33KR5689B1</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Headphones       </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">10000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">5</p>
-                            </td>
-                            <td> 
-                              <div class="badge badge-light-primary">In Stock</div>
-                            </td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/wireless-headphone.png" alt="wireless headphone"></div>
-                                <p>wireless-headphone</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">AD6789HEY0</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Headphones         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">15000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">4</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/1.png" alt="chair"></div>
-                                <p>Wood Chair</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">456DF78DFQ</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Furniture         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">99000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">2</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/2.png" alt="chairs"></div>
-                                <p>Wood Chair</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">5633GD3K54</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Furniture       </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">1000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">8</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/ipad.png" alt="mac laptop"></div>
-                                <p>MacBook Air 13.3-inch</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">589KO8PPQ8</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Laptops         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">45000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">10</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/mouse.png" alt="mouse"></div>
-                                <p>M185 Compact Wireless Mouse</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">02145YK796</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">E-Commerce         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">56000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">13</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i><i class="fa-solid fa-star font-light"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/1.png" alt="chairs"></div>
-                                <p>Wood chairs</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">568GH3LLQ2</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Furniture </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">78000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">50</p>
-                            </td>
-                            <td> 
-                              <div class="badge badge-light-primary">In Stock</div>
-                            </td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/watch.png" alt="watch"></div>
-                                <p>Smart watch</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">58FR7K34F6</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Electric         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">25000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">48</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/dvd.png" alt="DVD"></div>
-                                <p>DVD</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">HG5667DFQ1</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Electric      </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">5600.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">10</p>
-                            </td>
-                            <td> <span class="badge badge-light-primary">In Stock</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/speaker.png" alt="speakers"></div>
-                                <p>Speakers</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">02145YK796</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Electric</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">12200.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">50</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/phone.png" alt="phone"></div>
-                                <p>Apple iphone 13 Pro</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">56379FG3AW</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Phones    </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">19000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">48</p>
-                            </td>
-                            <td> <span class="badge badge-light-primary">In Stock</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/headphone.png" alt="headphones"></div>
-                                <p>Headphones</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">33KR5689B1</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Headphones       </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">10000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">5</p>
-                            </td>
-                            <td> <span class="badge badge-light-primary">In Stock</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/1.png" alt="chairs"></div>
-                                <p>Wood chairs</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">568GH3LLQ2</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Furniture </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">78000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">50</p>
-                            </td>
-                            <td> <span class="badge badge-light-primary">In Stock</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/watch.png" alt="watch"></div>
-                                <p>Smart watch</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">58FR7K34F6</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Electric         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">25000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">48</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/phone.png" alt="phone"></div>
-                                <p>Apple iphone 13 Pro</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">56379FG3AW</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Phones    </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">19000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">48</p>
-                            </td>
-                            <td> <span class="badge badge-light-primary">In Stock</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/headphone.png" alt="headphones"></div>
-                                <p>Headphones</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">33KR5689B1</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Headphones       </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">10000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">5</p>
-                            </td>
-                            <td> <span class="badge badge-light-primary">In Stock</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/wireless-headphone.png" alt="wireless headphone"></div>
-                                <p>wireless-headphone</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">AD6789HEY0</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Headphones         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">15000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">4</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/1.png" alt="chair"></div>
-                                <p>Wood Chair</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">456DF78DFQ</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Furniture         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">99000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">2</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/2.png" alt="chairs"></div>
-                                <p>Wood Chair</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">5633GD3K54</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Furniture       </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">1000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">8</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/laptop.png" alt="laptop"></div>
-                                <p>Apple Desktop 2024</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">02145YK796</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Laptops</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">56000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">13</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/phone.png" alt="phone"></div>
-                                <p>Apple iphone 13 Pro</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">56379FG3AW</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Phones    </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">19000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">48</p>
-                            </td>
-                            <td> <span class="badge badge-light-primary">In Stock</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/headphone.png" alt="headphones"></div>
-                                <p>Headphones</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">33KR5689B1</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Headphones       </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">10000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">5</p>
-                            </td>
-                            <td> <span class="badge badge-light-primary">In Stock</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/wireless-headphone.png" alt="wireless headphone"></div>
-                                <p>wireless-headphone</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">AD6789HEY0</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Smart Headphones         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">15000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">4</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out </span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr class="product-removes">
-                            <td>
-                              <div class="form-check"> 
-                                <input class="form-check-input checkbox-primary" type="checkbox">
-                              </div>
-                            </td>
-                            <td> 
-                              <div class="product-names">
-                                <div class="light-product-box"><img class="img-fluid" src="../assets/images/product/product-categories/1.png" alt="chair"></div>
-                                <p>Wood Chair</p>
-                              </div>
-                            </td>
-                            <td> 
-                              <p class="f-light">456DF78DFQ</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">Furniture         </p>
-                            </td>
-                            <td> 
-                              <p class="f-light">99000.00</p>
-                            </td>
-                            <td> 
-                              <p class="f-light">2</p>
-                            </td>
-                            <td> <span class="badge badge-light-secondary">Sold Out</span></td>
-                            <td> 
-                              <div class="rating"><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-warning"></i><i class="fa-solid fa-star font-light"></i><i class="fa-solid fa-star font-light"></i><i class="fa-solid fa-star font-light"></i></div>
-                            </td>
-                            <td> 
-                              <div class="product-action"><a href="add-products.html"> 
-                                  <svg>    
-                                    <use href="../assets/svg/icon-sprite.svg#edit-content"></use>
-                                  </svg></a>
-                                <svg>
-                                  <use href="../assets/svg/icon-sprite.svg#trash1"></use>
-                                </svg>
-                              </div>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
+    <div class="list-product-header mb-3">
+      <div>
+        <div class="light-box">
+          <a data-bs-toggle="collapse" href="#collapseProduct" role="button" aria-expanded="false" aria-controls="collapseProduct">
+            <i class="filter-icon show" data-feather="filter"></i>
+            <i class="icon-close filter-close hide"></i>
+          </a>
+        </div>
+        <a class="btn btn-primary" href="/realadmin/add-object.php"><i class="fa-solid fa-plus"></i>Добавить объект</a>
+      </div>
+      <div class="collapse" id="collapseProduct">
+        <div class="card card-body list-product-body">
+          <form method="get">
+            <div class="row row-cols-xl-5 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2 g-3"> 
+              <!-- Сортировка по прайсу -->
+              <div class="col">
+                <select class="form-select" name="sort_price" onchange="this.form.submit()">
+                  <option value="">Сортировать по цене</option>
+                  <option value="asc" <?= (isset($_GET['sort_price']) && $_GET['sort_price']=='asc')?'selected':'';?>>Сначала дешевые</option>
+                  <option value="desc" <?= (isset($_GET['sort_price']) && $_GET['sort_price']=='desc')?'selected':'';?>>Сначала дорогие</option>
+                </select>
+              </div>
+              <!-- Фильтр по статусу -->
+              <div class="col"> 
+                <select class="form-select" name="publication_status" onchange="this.form.submit()">
+                  <option value="">Статус</option>
+                  <?php foreach($statuses as $st): ?>
+                    <option value="<?= htmlspecialchars($st) ?>" <?= (isset($_GET['publication_status']) && $_GET['publication_status']==$st)?'selected':'';?>>
+                      <?= htmlspecialchars($st) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <!-- Фильтр по типу объекта -->
+              <div class="col"> 
+                <select class="form-select" name="object_type" onchange="this.form.submit()">
+                  <option value="">Тип объекта</option>
+                  <?php foreach($types as $type): ?>
+                    <option value="<?= htmlspecialchars($type) ?>" <?= (isset($_GET['object_type']) && $_GET['object_type']==$type)?'selected':'';?>>
+                      <?= htmlspecialchars($type) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <!-- Фильтр по виду объекта (ak) -->
+              <div class="col"> 
+                <select class="form-select" name="ak" onchange="this.form.submit()">
+                  <option value="">Вид объекта</option>
+                  <?php foreach($aks as $ak): ?>
+                    <option value="<?= htmlspecialchars($ak) ?>" <?= (isset($_GET['ak']) && $_GET['ak']==$ak)?'selected':'';?>>
+                      <?= htmlspecialchars($ak) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <!-- Фильтр по цене (min_price) по конкретному значению -->
+              <div class="col">
+                <select class="form-select" name="min_price" onchange="this.form.submit()">
+                  <option value="">Цена</option>
+                  <?php foreach($prices as $price): ?>
+                    <option value="<?= htmlspecialchars($price) ?>" <?= (isset($_GET['min_price']) && $_GET['min_price']==$price)?'selected':'';?>>
+                      <?= htmlspecialchars($price) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
               </div>
             </div>
+          </form>
+        </div>
+      </div>
+    </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Заголовок</th>
+                    <th>Тип</th>
+                    <th>Статус</th>
+                    <th>Дата публикации</th>
+                    <th>Мин. цена</th>
+                    <th>Макс. цена</th>
+                    <th>Куратор</th>
+                    <th>Адрес</th>
+                    <th style="width:120px;">Действия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php if ($result && $result->num_rows > 0): ?>
+                    <?php while($row = $result->fetch_assoc()): ?>
+                      <tr>
+                        <td><?= htmlspecialchars($row['id']) ?></td>
+                        <td><?= htmlspecialchars($row['name']) ?></td>
+                        <td><?= htmlspecialchars($row['object_type']) ?></td>
+                        <td><?= htmlspecialchars($row['publication_status']) ?></td>
+                        <td><?= htmlspecialchars($row['publication_date']) ?></td>
+                        <td><?= htmlspecialchars($row['min_price']) ?></td>
+                        <td><?= htmlspecialchars($row['prices']) ?></td>
+                        <td><?= htmlspecialchars($row['curator']) ?></td>
+                        <td><?= htmlspecialchars($row['address']) ?></td>
+                        <td>
+                          <a href="edit-object.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-primary" title="Редактировать"><i class="fa fa-edit"></i></a>
+                          <a href="delete-object.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-danger" title="Удалить" onclick="return confirm('Удалить объект?')"><i class="fa fa-trash"></i></a>
+                        </td>
+                      </tr>
+                    <?php endwhile; ?>
+                  <?php else: ?>
+                    <tr>
+                      <td colspan="10" class="text-center">Объекты не найдены</td>
+                    </tr>
+                  <?php endif; ?>
+                </tbody>
+              </table>
+            </div>
+            <!-- Можно добавить пагинацию здесь -->
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
         <?php
    $url = 'https://realty.pixeldev.ru/realadmin/include/footer.php';
    $content = file_get_contents($url);
