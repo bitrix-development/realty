@@ -25,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $location = $_POST['location'] ?? '';
     $object_type = $_POST['object_type'] ?? '';
     $ak = $_POST['ak'] ?? '';
-    $tags = $_POST['tags'] ?? '';
+    // Получаем теги как строку, приведём к строке если это массив
+    $tags = isset($_POST['tags']) ? (is_array($_POST['tags']) ? implode(',', $_POST['tags']) : $_POST['tags']) : '';
     $publication_status = $_POST['publication_status'] ?? '';
 
     $sql = "INSERT INTO objects 
@@ -50,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html >
 <html lang="en">
 
@@ -270,21 +272,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </div>
                               </div>
                               <div class="col-sm-6">
-                                <div class="row g-2 product-tag">
-                                  <div class="col-12">
-                                    <label class="form-label d-block m-0">Добавить тег</label>
-                                  </div>
-                                  <div class="col-12">
-                                    <input class="form-control" name="tags" value="">
-                                    <p>Можно выбрать несколько тегов</p>
-                                  </div>
-                                </div>
+                                        <div class="row g-2 product-tag">
+                                          <div class="col-12">
+                                            <label class="form-label d-block m-0">Add Tag</label>
+                                          </div>
+                                          <div class="col-12">
+                                            <input name="basic-tags" value="watches, sports, clothes, bottles">
+                                            <p>Products can be tagged</p>
+                                          </div>
+                                        </div>
+                                      </div>
                               </div>
-                              <div class="col-12">
-                                <div class="category-buton"><a class="btn button-primary" href="#!" data-bs-toggle="modal" data-bs-target="#category-pill-modal"><i class="me-2 fa-solid fa-plus"></i>Добавить новую категорию </a></div>
-                                <!-- Модальное окно — не влияет на отправку формы -->
-                              </div>
-                            </div>
                           </div>
                           <div class="col-12"> 
                             <div class="row g-3">
@@ -549,6 +547,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- select2_options-->
     <script src="../assets/js/vendors/@yaireo/tagify/dist/tagify.js"></script>
     <script src="../assets/js/vendors/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+  
     <script src="../assets/js/vendors/@yaireo/tagify/dist/intlTelInput.min.js"></script>
     <!-- page_select4-->
     <script src="../assets/js/add-product/select4-custom.js"> </script>
