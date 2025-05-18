@@ -1,4 +1,4 @@
-﻿<?php
+﻿﻿<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -25,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $location = $_POST['location'] ?? '';
     $object_type = $_POST['object_type'] ?? '';
     $ak = $_POST['ak'] ?? '';
-    // Получаем теги как строку, приведём к строке если это массив
-    $tags = isset($_POST['tags']) ? (is_array($_POST['tags']) ? implode(',', $_POST['tags']) : $_POST['tags']) : '';
+    // !!! Изменено: теперь берем из поля basic-tags !!!
+    $tags = $_POST['basic-tags'] ?? '';
     $publication_status = $_POST['publication_status'] ?? '';
 
     $sql = "INSERT INTO objects 
@@ -236,20 +236,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                       </div>
                     </div>
                     <div class="tab-pane fade" id="gallery-product" role="tabpanel" aria-labelledby="gallery-product-tab">
-                      <div class="sidebar-body">
-                        <div class="product-upload">
-                          <p>Product Image </p>
-                          <form class="dropzone dropzone-light" id="multiFileUploadA" action="/upload.php">
-                            <div class="dz-message needsclick">
-                              <svg>
-                                <use href="../assets/svg/icon-sprite.svg#file-upload"></use>
-                              </svg>
-                              <h6>Drag your image here, or <a class="text-primary" href="#!">browser</a></h6><span class="note needsclick">SVG,PNG,JPG or GIF</span>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
+  <div class="sidebar-body">
+    <div class="product-upload">
+      <p>Загрузить превью фото объекта</p>
+      <!-- Dropzone без form! -->
+      <div id="mainPhotoDropzone" class="dropzone dropzone-light dz-clickable">
+        <div class="dz-message needsclick">
+          <svg>
+            <use href="../assets/svg/icon-sprite.svg#file-upload"></use>
+          </svg>
+          <h6>Drag your image here, or <a class="text-primary" href="#!">browser</a></h6>
+          <span class="note needsclick">SVG, PNG, JPG or GIF</span>
+        </div>
+      </div>
+      <!-- Скрытое поле, чтобы путь к файлу попал в основную форму -->
+      <input type="hidden" name="main_photo" id="main_photo_input" value="<?= isset($object) ? htmlspecialchars($object['main_photo']) : '' ?>">
+      <!-- Показываем текущее фото если оно есть -->
+      <?php if (!empty($object['main_photo'])): ?>
+        <div id="main_photo_preview" style="margin-top:10px;">
+          <img src="<?= htmlspecialchars($object['main_photo']) ?>" style="max-width:200px;">
+        </div>
+      <?php else: ?>
+        <div id="main_photo_preview"></div>
+      <?php endif; ?>
+    </div>
+  </div>
+</div>
+
+             
                     <div class="tab-pane fade" id="category-product" role="tabpanel" aria-labelledby="category-product-tab">
                       <div class="sidebar-body">
                         <div class="row g-lg-4 g-3">
@@ -272,16 +286,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </div>
                               </div>
                               <div class="col-sm-6">
-                                        <div class="row g-2 product-tag">
-                                          <div class="col-12">
-                                            <label class="form-label d-block m-0">Add Tag</label>
-                                          </div>
-                                          <div class="col-12">
-                                            <input name="basic-tags" value="watches, sports, clothes, bottles">
-                                            <p>Products can be tagged</p>
-                                          </div>
-                                        </div>
-                                      </div>
+                                <div class="row g-2 product-tag">
+                                  <div class="col-12">
+                                    <label class="form-label d-block m-0">Добавить тег</label>
+                                  </div>
+                                  <div class="col-12">
+                                    <!-- Используем базовое поле для Tagify -->
+                                    <input class="form-control" name="basic-tags" value="">
+                                    <p>Можно выбрать несколько тегов</p>
+                                  </div>
+                                </div>
+                              </div>
                               </div>
                           </div>
                           <div class="col-12"> 
@@ -557,5 +572,59 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <script src="../assets/js/custom-add-product.js"></script> -->
     <!-- custom script -->
     <script src="../assets/js/script.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var input = document.querySelector('input[name="basic-tags"]');
+        if (input) {
+          new Tagify(input);
+        }
+      });
+      document.addEventListener('DOMContentLoaded', function() {
+  // Отключаем автоинициализацию Dropzone
+  if (window.Dropzone) Dropzone.autoDiscover = false;
+  // Инициализация Dropzone на div
+  var previewBlock = document.getElementById('main_photo_preview');
+  var dz = new Dropzone("#mainPhotoDropzone", {
+    url: "/upload.php", // Ваш обработчик загрузки
+    paramName: "file", // имя параметра файла
+    maxFiles: 1,
+    acceptedFiles: "image/jpeg,image/png,image/gif,image/jpg,image/svg+xml",
+    addRemoveLinks: true,
+    dictDefaultMessage: "Перетащите фото сюда или кликните для выбора",
+    init: function() {
+      // Если уже есть картинка, показываем ее как превью
+      <?php if (!empty($object['main_photo'])): ?>
+      var mockFile = { name: "Фото", size: 12345, type: 'image/jpeg', status: Dropzone.SUCCESS, accepted: true };
+      this.emit("addedfile", mockFile);
+      this.emit("thumbnail", mockFile, "<?= htmlspecialchars($object['main_photo']) ?>");
+      this.emit("complete", mockFile);
+      this.files.push(mockFile);
+      <?php endif; ?>
+      this.on("maxfilesexceeded", function(file) {
+        this.removeAllFiles();
+        this.addFile(file);
+      });
+    },
+    success: function(file, response) {
+      // Ожидаем, что response = {filepath: "/uploads/image.jpg"}
+      let data = response;
+      if (typeof response === "string") {
+        try { data = JSON.parse(response); } catch(e) {}
+      }
+      if (data.filepath) {
+        document.getElementById('main_photo_input').value = data.filepath;
+        if (previewBlock) {
+          previewBlock.innerHTML = '<img src="' + data.filepath + '" style="max-width:200px;">';
+        }
+      }
+    },
+    removedfile: function(file) {
+      document.getElementById('main_photo_input').value = '';
+      if (previewBlock) previewBlock.innerHTML = '';
+      file.previewElement && file.previewElement.parentNode.removeChild(file.previewElement);
+    }
+  });
+});
+    </script>
   </body>
 </html>
