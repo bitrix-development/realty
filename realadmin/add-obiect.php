@@ -29,8 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $publication_status = $_POST['publication_status'] ?? '';
 
     $sql = "INSERT INTO objects 
-        (name, description, min_price, prices, commission, developer, completion_date, curator, curator_phone, address, coordinates, location, object_type, ak, tags, publication_status, publication_date) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    (name, description, min_price, prices, commission, developer, completion_date, curator, curator_phone, address, coordinates, location, object_type, ak, tags, publication_status, publication_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     if ($stmt = $conn->prepare($sql)) {
         $stmt->bind_param(
@@ -227,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                           <div class="col-12"> 
                             <div class="toolbar-box">
                               <div id="toolbar2"></div>
-                              <textarea class="form-control" id="description" name="description" placeholder="Описание объекта"></textarea>
+                              <textarea style="height: 400px;" class="form-control" id="description" name="description" placeholder="Описание объекта"></textarea>
                             </div>
                           </div>
                         </div>
@@ -416,7 +416,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                           <label class="form-label" for="files">Файлы</label>
                                         </div>
                                         <div class="col-12">
-                                          <input class="form-control" id="files" type="text" disabled>
+                                          <input class="form-control" id="files" type="text" >
                                         </div>
                                       </div>
                                     </div>
@@ -426,7 +426,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                           <label class="form-label" for="pdf">Скачать pdf</label>
                                         </div>
                                         <div class="col-12">
-                                          <input class="form-control" id="pdf" type="text" disabled>
+                                          <input class="form-control" id="pdf" type="text" >
                                         </div>
                                       </div>
                                     </div>
@@ -436,7 +436,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                           <label class="form-label" for="video">Видео по объекту</label>
                                         </div>
                                         <div class="col-12">
-                                          <input class="form-control" id="video" type="text" disabled>
+                                          <input class="form-control" id="video" type="text" >
                                         </div>
                                       </div>
                                     </div>
