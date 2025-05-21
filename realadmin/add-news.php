@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-<!-- Copied from https://admin.pixelstrap.net/admiro/template/projectcreate.html by Cyotek WebCopy 1.7.0.600, 9 мая 2025 г., 9:38:40 -->
+
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -25,10 +25,12 @@
     <link rel="stylesheet" href="../assets/css/themify.css">
     <!--fontawesome-->
     <link rel="stylesheet" href="../assets/css/fontawesome-min.css">
-    <!-- Whether Icon css-->
-    <link rel="stylesheet" type="text/css" href="../assets/css/vendors/weather-icons/weather-icons.min.css">
+ <!-- Whether Icon css-->
+ <link rel="stylesheet" type="text/css" href="../assets/css/vendors/weather-icons/weather-icons.min.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/vendors/dropzone.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/vendors/scrollbar.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/vendors/quill.snow.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/vendors/choices.js/public/assets/styles/choices.min.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/vendors/slick.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/vendors/slick-theme.css">
     <!-- App css -->
@@ -83,112 +85,83 @@
               </div>
             </div>
           </div>
-          <!-- Container-fluid starts-->
-          <div class="container-fluid">
-            <div class="row"> 
+         <!-- Container-fluid starts-->
+         <div class="container-fluid">
+            <div class="row">
               <div class="col-sm-12">
                 <div class="card">
-                  <div class="card-body">
-                    <div class="form theme-form basic-form">
-                      <div class="row">
-                        <div class="col"> 
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Заголовок новости </h5>
-                            <input class="form-control" type="text" placeholder="Project name *">
+                  <div class="card-header card-no-border pb-0">
+                    <h3>Post Edit</h3>
+                  </div>
+                  <div class="card-body add-post">
+                    <form class="row needs-validation" novalidate="">
+                      <div class="col-sm-12">
+                        <div class="mb-3">
+                          <label class="mb-2" for="validationCustom01">Title:</label>
+                          <input class="form-control" id="validationCustom01" type="text" placeholder="Post Title" required="">
+                          <div class="valid-feedback">Looks good!</div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="mb-2">Type:</label>
+                          <div class="m-checkbox-inline">
+                            <label for="edo-ani">
+                              <input class="radio_animated" id="edo-ani" type="radio" name="rdo-ani" checked="">Text
+                            </label>
+                            <label for="edo-ani1">
+                              <input class="radio_animated" id="edo-ani1" type="radio" name="rdo-ani">Image
+                            </label>
+                            <label for="edo-ani2">
+                              <input class="radio_animated" id="edo-ani2" type="radio" name="rdo-ani" checked="">Audio
+                            </label>
+                            <label for="edo-ani3">
+                              <input class="radio_animated" id="edo-ani3" type="radio" name="rdo-ani">Video
+                            </label>
                           </div>
                         </div>
-                      </div>
-                      <div class="row">
-                        <div class="col">
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Client name</h5>
-                            <input class="form-control" type="text" placeholder="Name client or company name">
-                          </div>
+                        <div class="mb-3" data-test-hook="remove-button">
+                          <label class="col-form-label mb-2" for="choices-remove-button">Category:</label>
+                          <select class="form-control col-sm-12" id="choices-remove-button" name="choices-remove-button" multiple="">
+                            <option value="">Select Your Name</option>
+                            <option value="Choice 1">Lifestyle</option>
+                            <option value="Choice 2">Travel</option>
+                          </select>
                         </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-sm-4">
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Project Rate</h5>
-                            <input class="form-control" type="text" placeholder="Enter project Rate">
-                          </div>
-                        </div>
-                        <div class="col-sm-4">
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Project Type</h5>
-                            <select class="form-select">
-                              <option>Hourly</option>
-                              <option>Fix price</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div class="col-sm-4">
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Priority</h5>
-                            <select class="form-select">
-                              <option>Low</option>
-                              <option>Medium</option>
-                              <option>High</option>
-                              <option>Urgent</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-sm-4">
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Project Size  </h5>
-                            <select class="form-select">
-                              <option>Small</option>
-                              <option>Medium</option>
-                              <option>Big</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div class="col-sm-4">
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Starting date</h5>
-                            <input class="datepicker-here form-control" type="text" data-language="en">
-                          </div>
-                        </div>
-                        <div class="col-sm-4">           
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Ending date</h5>
-                            <input class="datepicker-here form-control" type="text" data-language="en">
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col">
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Enter some Details</h5>
-                            <textarea class="form-control" id="exampleFormControlTextarea4" rows="3"></textarea>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col">
-                          <div class="mb-3">
-                            <h5 class="f-w-600 mb-2">Upload project file</h5>
-                            <form class="dropzone" id="singleFileUpload" action="/upload.php">    
-                              <div class="dz-message needsclick"> <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <h6>Drop files here or click to upload.       </h6><span class="note needsclick">(This is just a demo dropzone. Selected files are<strong>not</strong> actually uploaded.)</span>
+                        <div class="email-wrapper">
+                          <div class="theme-form">
+                            <div class="mb-3">
+                              <label class="mb-2">Content:</label>
+                              <div class="toolbar-box">
+                                <div id="toolbar1">
+                                  <button class="ql-bold">Bold </button>
+                                  <button class="ql-italic">Italic </button>
+                                  <button class="ql-underline">underline</button>
+                                  <button class="ql-list" value="ordered">List </button>
+                                  <button class="ql-list" value="bullet"> </button>
+                                  <button class="ql-link"></button>
+                                  <button class="ql-image"></button>
+                                </div>
+                                <div id="editor1"></div>
                               </div>
-                            </form>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div class="row">
-                        <div class="col">
-                          <div class="text-end"> <a class="btn btn-success me-3" href="#">Add</a><a class="btn btn-danger" href="#">Cancel </a></div>
-                        </div>
+                    </form>
+                    <form class="dropzone" id="singleFileUpload" action="/upload.php">
+                      <div class="m-0 dz-message needsclick"><i class="icon-cloud-up"></i>
+                        <h6 class="mb-0">Drop files here or click to upload.</h6>
                       </div>
+                    </form>
+                    <div class="btn-showcase text-end blog-btn">
+                      <button class="btn btn-primary" type="submit">Post</button>
+                      <input class="btn bg-light font-dark" type="reset" value="Discard">
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          <!-- Container-fluid Ends-->
         </div>
         <?php
    $url = 'https://realty.pixeldev.ru/realadmin/include/footer.php';
@@ -202,13 +175,16 @@
    ?>
       </div>
     </div>
-    <!-- jquery-->
-    <script src="../assets/js/vendors/jquery/jquery.min.js"></script>
+      <!-- jquery-->
+      <script src="../assets/js/vendors/jquery/jquery.min.js"></script>
     <!-- bootstrap js-->
     <script src="../assets/js/vendors/bootstrap/dist/js/bootstrap.bundle.min.js" defer=""></script>
     <script src="../assets/js/vendors/bootstrap/dist/js/popper.min.js" defer=""></script>
     <!--fontawesome-->
     <script src="../assets/js/vendors/font-awesome/fontawesome-min.js"></script>
+    <!-- feather-->
+    <script src="../assets/js/vendors/feather-icon/feather.min.js"></script>
+    <script src="../assets/js/vendors/feather-icon/custom-script.js"></script>
     <!-- sidebar -->
     <script src="../assets/js/sidebar.js"></script>
     <!-- dropzone-->
@@ -217,13 +193,18 @@
     <!-- scrollbar-->
     <script src="../assets/js/scrollbar/simplebar.js"></script>
     <script src="../assets/js/scrollbar/custom.js"></script>
+    <!-- choice-->
+    <script src="../assets/js/vendors/choices.js/public/assets/scripts/choices.js"></script>
     <!-- slick-->
     <script src="../assets/js/slick/slick.min.js"></script>
     <script src="../assets/js/slick/slick.js"></script>
-    <!-- theme_customizer-->
-    <script src="../assets/js/theme-customizer/customizer.js"></script>
+    <!-- editors-->
+    <script src="../assets/js/editors/quill.js"></script>
+    <!-- add_post-->
+    <script src="../assets/js/choices/add-post-custom.js"></script>
+
     <!-- custom script -->
     <script src="../assets/js/script.js"></script>
   </body>
-<!-- Copied from https://admin.pixelstrap.net/admiro/template/projectcreate.html by Cyotek WebCopy 1.7.0.600, 9 мая 2025 г., 9:38:40 -->
+
 </html>
